@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-Current version 0.0.2
+Current version 0.0.3
 
 Introduction
 ------------
@@ -64,3 +64,31 @@ Modules
 Modules can be put in a sub directory (or a defined directory) and loaded at run time.
 This gives the ability to break up a largeg script into modules ofr easier management.
 The modules need to have a .sh extension to be found by the script. This can be changed.
+
+Defaults
+--------
+
+As previously mentioned defaults are specified in the set_defaults function, and updated in the reset_defaults
+function once the switches/parameters and their values are processed and options are processed.
+As previously stated, I've used true/false as values rather than 0/1 as I often generate YAML and other config
+files that use these as values, so it makes coding a bit more straightforward/transparent.
+
+Output
+------
+
+In general output is run through the verbose_message function, which handles formating and outputs appropriate
+prefixes, e.g. "Notice", "Warning", etc. This is designed to make sure out is consistently formated.
+It also allows output to be done only when the verbose mode is set so the script runs quietly if needed.
+
+Exit
+----
+
+There is a do_exit function that doesn't ecit when in dryrun mode. This can be handy for debugging your code
+when you are running in dryrun mode where you are not executing commands in the shell but want to test the flow.
+
+Check Values
+------------
+
+There is a check_values function that can be run with switches that take values.
+This is a simple check to see if the value, if it starts with a "--" then it assumes that you haven't provied
+a value and it's processing the next switch and exit. This can be overridden by using the --force switch.

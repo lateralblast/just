@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.2
+# Version:      0.0.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -27,7 +27,7 @@ script_name="just"
 script_file=$( realpath "$script_file" )
 script_path=$( dirname "$script_file" )
 module_path="$script_path/modules"
-script_bin=$( basename "$script_file"" )
+script_bin=$( basename "$script_file" )
 
 # Enable verbose mode
 
@@ -238,6 +238,10 @@ process_options () {
       # Enable debug mode
       do_debug="true"
       ;;
+    force)                # option
+      # Enable force mode
+      do_force="true"
+      ;;
     strict)               # option
       # Enable strict mode
       do_strict="true"
@@ -293,6 +297,11 @@ while test $# -gt 0; do
     --debug)              # switch
       # Enable debug mode
       do_debug="true"
+      shift
+      ;;
+    --debug)              # switch
+      # Enable force mode
+      do_force="true"
       shift
       ;;
     --strict)             # switch
