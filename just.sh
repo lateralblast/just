@@ -23,9 +23,9 @@
 
 script_args="$*"
 script_file="$0"
-script_bin=$( basename "$script_file" )
-absolute_path=$( realpath "$script_file" )
-script_path=$( dirname "$absolute_path" )
+script_name="just"
+script_file=$( realpath "$script_file" )
+script_path=$( dirname "$script_bin" )
 module_path="$script_path/modules"
 
 # Enable verbose mode
