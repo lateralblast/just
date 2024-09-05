@@ -31,7 +31,7 @@ Provide a base set of functionality that has:
 
 - Help information
 - Version information
-- Debug and verbose commandline arguments/options to help with code debuging/quality
+- Debug and verbose command-line arguments/options to help with code debugging/quality
 - Some additional base code checking capability (call out to shellcheck)
 - Dryrun mode capability
 - The ability to split larger scripts into modules which are loaded at run time
@@ -191,5 +191,5 @@ Multiple actions can be specified at the one time by separating them with a comm
 ```
 
 The benefit of being able to run multiple actions means you don't need to run the script multiple times.
-Obviously some caution needs to be taken in ordering the workflow in sequential operations soe they
+Obviously some caution needs to be taken in ordering the workflow in sequential operations so they
 proceed in the correct order.
