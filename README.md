@@ -18,7 +18,7 @@ the years to handle command line arguments and inline documentation.
 Goals
 -----
 
-The goals of this script templare are to:
+The goals of this script template are to:
 
 Provide a command line processor that:
 
@@ -33,7 +33,7 @@ Provide a base set of functionality that has:
 - Version information
 - Debug and verbose command-line arguments/options to help with code debugging/quality
 - Some additional base code checking capability (call out to shellcheck)
-- Dryrun mode capability
+- Dry-run mode capability
 - The ability to split larger scripts into modules which are loaded at run time
 
 Choices
@@ -50,8 +50,8 @@ Workflow
 
 The script has the following workflow
 
-- Get some environmen variables
-- If givven no switches/parameters print help and exit
+- Get some environment variables
+- If given no switches/parameters print help and exit
 - Set defaults
 - Parse command line switches/parameters
 - If options switch has values process them
@@ -62,7 +62,7 @@ Modules
 -------
 
 Modules can be put in a sub directory (or a defined directory) and loaded at run time.
-This gives the ability to break up a largeg script into modules ofr easier management.
+This gives the ability to break up a large script into modules for easier management.
 The modules need to have a .sh extension to be found by the script. This can be changed.
 
 Defaults
@@ -76,38 +76,38 @@ files that use these as values, so it makes coding a bit more straightforward/tr
 Output
 ------
 
-In general output is run through the verbose_message function, which handles formating and outputs appropriate
-prefixes, e.g. "Notice", "Warning", etc. This is designed to make sure out is consistently formated.
+In general output is run through the verbose_message function, which handles formatting and outputs appropriate
+prefixes, e.g. "Notice", "Warning", etc. This is designed to make sure out is consistently formatted.
 It also allows output to be done only when the verbose mode is set so the script runs quietly if needed.
 
 Exit
 ----
 
-There is a do_exit function that doesn't ecit when in dryrun mode. This can be handy for debugging your code
-when you are running in dryrun mode where you are not executing commands in the shell but want to test the flow.
+There is a do_exit function that doesn't exit when in dry-run mode. This can be handy for debugging your code
+when you are running in dry-run mode where you are not executing commands in the shell but want to test the flow.
 
 Check Values
 ------------
 
 There is a check_values function that can be run with switches that take values.
-This is a simple check to see if the value, if it starts with a "--" then it assumes that you haven't provied
+This is a simple check to see if the value, if it starts with a "--" then it assumes that you haven't provided
 a value and it's processing the next switch and exit. This can be overridden by using the --force switch.
 
 Execute
 -------
 
 There is an execute_command function that will output the command when run in verbose mode,
-and not execute the command when run in dryryn mode. This is useful for debugging and testing workflow.
+and not execute the command when run in dry-run mode. This is useful for debugging and testing workflow.
 
 Help
 ----
 
 The print_help function outputs information about the standard switches.
 To reduce the amount of duplication, i.e. having the case statement, then having to duplicate this in
-a seperate help function, and thus have to keep the two in sync, you can use tags in the case
+a separate help function, and thus have to keep the two in sync, you can use tags in the case
 statement, which the print_help function will process to print help information.
 
-The format of the imbedded help information tags is the case followed by a hash, and a commented
+The format of the embedded help information tags is the case followed by a hash, and a commented
 description under the case, e.g.
 
 ```
