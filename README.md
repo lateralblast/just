@@ -92,3 +92,104 @@ Check Values
 There is a check_values function that can be run with switches that take values.
 This is a simple check to see if the value, if it starts with a "--" then it assumes that you haven't provied
 a value and it's processing the next switch and exit. This can be overridden by using the --force switch.
+
+Execute
+-------
+
+There is an execute_command function that will output the command when run in verbose mode,
+and not execute the command when run in dryryn mode. This is useful for debugging and testing workflow.
+
+Help
+----
+
+The print_help function outputs information about the standard switches.
+To reduce the amount of duplication, i.e. having the case statement, then having to duplicate this in
+a seperate help function, and thus have to keep the two in sync, you can use tags in the case
+statement, which the print_help function will process to print help information.
+
+The format of the imbedded help information tags is the case followed by a hash, and a commented
+description under the case, e.g.
+
+```
+--action*)            # switch
+  # Action to perform
+  check_value "$1" "$2"
+  actions="$2"
+  do_actions="true"
+  shift 2
+  ;;
+```
+
+When the --help, or --usage switch is used, and the the print_help function called, it parses this to produce:
+
+```
+Usage: just.sh --switch [value]
+
+switches:
+--------
+ --action*)
+   Action to perform
+```
+
+Options
+-------
+
+Like the print_help function, print_options works on tags, e.g.
+
+```
+debug)                # option
+  # Enable debug mode
+  do_debug="true"
+  ;;
+```
+
+When the --usage switch is used with the options value, this produces:
+
+```
+Usage: just.sh --option(s) [value]
+
+options:
+-------
+ debug)
+   Enable debug mode
+```
+
+Multiple options can be specified at the one time by separating them with a comma, e.g.
+
+```
+./just.sh --options option1,option2
+```
+
+Actions
+-------
+
+Like the print_help function, print_actions works on tags, e.g.
+
+```
+help)                 # action
+  # Print actions help
+  print_actions
+  exit
+  ;;
+```
+
+When the --usage switch is used with the actions value, this produces:
+
+```
+Usage: just.sh --action(s) [value]
+
+actions:
+-------
+ help)
+   Print actions help
+```
+
+Multiple actions can be specified at the one time by separating them with a comma, e.g.
+
+```
+./just.sh --actions action1,action2
+```
+
+The benefit of being able to run multiple actions means you don't need to run the script multiple times.
+Obviously some caution needs to be taken in ordering the workflow in sequential operations soe they
+proceed in the correct order.
