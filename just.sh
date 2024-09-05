@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.1
+# Version:      0.0.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -25,6 +25,15 @@ script_args="$*"
 script_file="$0"
 module_path=""
 script_bin=$( basename "$script_file" )
+absolute_path=$( realpath "$script_file" )
+script_path=$( dirname "$absolute_path" )
+module_path="$script_path/modules"
+
+# Enable verbose mode
+
+if [[ "$script_args" =~ "verbose" ]]; then
+  do_verbose="true"
+fi
 
 # Set defaults
 
@@ -37,13 +46,46 @@ set_defaults () {
   do_debug="false"
   do_force="false"
 }
+
+# Verbose message
+
+verbose_message () {
+  message="$1"
+  format="$2"
+  if [ "$do_verbose" = "true" ] || [ "$format" = "verbose" ]; then
+    case "$format" in
+      "execute")
+        echo "Executing:    $message"
+        ;;
+      "info")
+        echo "Information:  $message"
+        ;;
+      "notice")
+        echo "Notice:       $message"
+        ;;
+      "verbose")
+        echo "$message"
+        ;;
+      "warn")
+        echo "Warning:      $message"
+        ;;
+      "load")
+        echo "Loading:      $message"
+        ;;
+      *)
+        echo "$message"
+        ;;
+    esac
+  fi
+}
+
 # Load modules
 
-if [ -d "$moddule_path" ]; then
-  modules=$( find "$mod_path" -name "*,sh" )
-  for module in "${modules[@]}"; do
+if [ -d "$module_path" ]; then
+  modules=$( find "$module_path" -name "*.sh" )
+  for module in $modules; do
     if [[ "$script_args" =~ "verbose" ]]; then
-      echo "Loading Module: $module"
+     verbose_message "Module $module" "load"
     fi
     . "$module"
   done
@@ -99,35 +141,6 @@ execute_command () {
   fi
   if [ "$do_dryrun" = "false" ]; then
     eval "$command"
-  fi
-}
-
-# Verbose message
-
-verbose_message () {
-  message="$1"
-  format="$2"
-  if [ "$do_verbose" = "true" ] || [ "$format" = "verbose" ]; then
-    case "$format" in
-      "execute")
-        echo "Executing:    $message"
-        ;;
-      "info")
-        echo "Information:  $message"
-        ;;
-      "notice")
-        echo "Notice:       $message"
-        ;;
-      "verbose")
-        echo "$message"
-        ;;
-      "warn")
-        echo "Warning:      $message"
-        ;;
-      *)
-        echo "$message"
-        ;;
-    esac
   fi
 }
 

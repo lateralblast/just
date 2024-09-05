@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-Current version 0.0.1
+Current version 0.0.2
 
 Introduction
 ------------
@@ -34,6 +34,7 @@ Provide a base set of functionality that has:
 - Debug and verbose commandline arguments/options to help with code debuging/quality
 - Some additional base code checking capability (call out to shellcheck)
 - Dryrun mode capability
+- The ability to split larger scripts into modules which are loaded at run time
 
 Choices
 -------
@@ -56,3 +57,10 @@ The script has the following workflow
 - If options switch has values process them
 - Reset/updates defaults base on command line switches/parameters
 - Perform action(s)
+
+Modules
+-------
+
+Modules can be put in a sub directory (or a defined directory) and loaded at run time.
+This gives the ability to break up a largeg script into modules ofr easier management.
+The modules need to have a .sh extension to be found by the script. This can be changed.
