@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.3
+# Version:      0.0.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -45,6 +45,11 @@ set_defaults () {
   do_dryrun="false"
   do_debug="false"
   do_force="false"
+  do_yes="false"
+  os_name=$( uname -s )
+  if [ "$os_name" = "Linux" ]; then
+    os_distro=$( lsb_release -i -s 2> /dev/null )
+  fi
 }
 
 # Verbose message
@@ -121,9 +126,25 @@ check_value () {
   parameter="$1"
   value="$2"
   if [[ "$value" =~ "--" ]]; then
-    verbose_message "Value '$value' for parameter '$parameter' looks like a parameter" "warn"
+    verbose_message "Value '$value' for parameter '$parameter' looks like a parameter" "verbose"
+    echo ""
     if [ "$do_force" = "false" ]; then
       do_exit
+    fi
+  else
+    if [ "$value" = "" ]; then
+      verbose_message "No value given for parameter $paraameter" "verbose"
+      echo ""
+      if [[ "$parameter" =~ "option" ]]; then
+        print_options
+      else
+        if [[ "$parameter" =~ "action" ]]; then
+          print_actions
+        else
+          print_help
+        fi
+      fi
+      exit
     fi
   fi
 }
@@ -241,6 +262,10 @@ process_options () {
     force)                # option
       # Enable force mode
       do_force="true"
+      ;;
+    yes)
+      # Answer yes to questions
+      do_yes="true"
       ;;
     strict)               # option
       # Enable strict mode

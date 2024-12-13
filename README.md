@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-Current version 0.0.3
+Current version 0.0.4
 
 Introduction
 ------------
