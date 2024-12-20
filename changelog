@@ -6,3 +6,5 @@
 # Added force switch/option and updated documentation
 # 0.0.4: Fri 13 Dec 2024 15:12:39 AEDT
 # Improved handing for switches that take values
+# 0.0.5: Fri 20 Dec 2024 22:43:24 AEDT
+# Fixed force switch

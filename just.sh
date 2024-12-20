@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.4
+# Version:      0.0.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -324,7 +324,7 @@ while test $# -gt 0; do
       do_debug="true"
       shift
       ;;
-    --debug)              # switch
+    --force)              # switch
       # Enable force mode
       do_force="true"
       shift
