@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.0.8
+# Version:      0.0.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -142,7 +142,7 @@ check_value () {
     fi
   else
     if [ "$value" = "" ]; then
-      verbose_message "No value given for parameter $paraameter" "verbose"
+      verbose_message "No value given for parameter $parameter" "verbose"
       echo ""
       if [[ "$parameter" =~ "option" ]]; then
         print_options
@@ -320,6 +320,11 @@ process_actions () {
       print_defaults
       exit
       ;;
+    shellcheck)           # action
+      # Shellcheck script
+      check_shellcheck
+      exit
+      ;;
     *)
       print_actions
       exit
@@ -378,8 +383,13 @@ while test $# -gt 0; do
       shift 2
       exit
       ;;
-    *|--help|-h)          # switch
+    --help|-h)            # switch
       # Print help information
+      print_help
+      shift
+      exit
+      ;;
+    *)
       print_help
       shift
       exit

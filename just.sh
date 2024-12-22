@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.6
+# Version:      0.0.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -52,35 +52,31 @@ set_defaults () {
   fi
 }
 
+set_defaults
+
 # Verbose message
 
 verbose_message () {
   message="$1"
   format="$2"
-  if [ "$do_verbose" = "true" ] || [ "$format" = "verbose" ]; then
-    case "$format" in
-      "execute")
-        echo "Executing:    $message"
-        ;;
-      "info")
-        echo "Information:  $message"
-        ;;
-      "notice")
-        echo "Notice:       $message"
-        ;;
-      "verbose")
-        echo "$message"
-        ;;
-      "warn")
-        echo "Warning:      $message"
-        ;;
-      "load")
-        echo "Loading:      $message"
-        ;;
-      *)
-        echo "$message"
-        ;;
-    esac
+  if [ "$format" = "verbose" ]; then
+    echo "$message"
+  else
+    if [ "$do_verbose" = "true" ]; then
+      if [[ "$format" =~ ing$ ]]; then
+        format="${format^}"
+      else
+        if [[ "$format" =~ t$ ]]; then
+          format="${format^}ing"
+        else
+          if [[ "$format" =~ e$ ]]; then
+            format="${format::-1}"
+            format="${format^}ing"
+          fi
+        fi
+      fi 
+      echo -e "$format:\t\t$message"
+    fi
   fi
 }
 
@@ -133,7 +129,7 @@ check_value () {
     fi
   else
     if [ "$value" = "" ]; then
-      verbose_message "No value given for parameter $paraameter" "verbose"
+      verbose_message "No value given for parameter $parameter" "verbose"
       echo ""
       if [[ "$parameter" =~ "option" ]]; then
         print_options
@@ -297,16 +293,17 @@ process_actions () {
       print_version
       exit
       ;;
+    shellcheck)           # action
+      # Shellcheck script
+      check_shellcheck
+      exit
+      ;;
     *)
       print_actions
       exit
       ;;
   esac
 }
-
-# Set defaults
-
-set_defaults
 
 # Handle command line arguments
 
@@ -359,8 +356,13 @@ while test $# -gt 0; do
       shift 2
       exit
       ;;
-    *|--help|-h)          # switch
+    --help|-h)            # switch
       # Print help information
+      print_help
+      shift
+      exit
+      ;;
+    *)
       print_help
       shift
       exit
