@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.0.6
+# Version:      0.0.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -29,30 +29,35 @@ script_path=$( dirname "$script_file" )
 module_path="$script_path/modules"
 script_bin=$( basename "$script_file" )
 
-declare -A options
+# Create arrays for options and actions
 
-# Enable verbose mode
-
-if [[ "$script_args" =~ "verbose" ]]; then
-  do_verbose="true"
-fi
+declare -A options 
+declare -A defaults 
+declare -a option_flags
+declare -a action_flags
 
 # Set defaults
 
 set_defaults () {
-  options["verbose"]="false"
-  options["actions"]="false"
-  options["options"]="false"
-  options["strict"]="false"
-  options["dryrun"]="false"
-  options["debug"]="false"
-  options["force"]="false"
-  options["yes"]="false"
+  defaults["verbose"]="false"
+  defaults["actions"]="false"
+  defaults["options"]="false"
+  defaults["strict"]="false"
+  defaults["dryrun"]="false"
+  defaults["debug"]="false"
+  defaults["force"]="false"
+  defaults["yes"]="false"
+  for default in "${!defaults[@]}"; do
+    value="${defaults[${default}]}"
+    options["$default"]="$value"
+  done
   os_name=$( uname -s )
   if [ "$os_name" = "Linux" ]; then
     os_distro=$( lsb_release -i -s 2> /dev/null )
   fi
 }
+
+set_defaults
 
 # Verbose message
 
@@ -79,12 +84,23 @@ verbose_message () {
       "load")
         echo "Loading:      $message"
         ;;
+      "set")
+        echo "Setting:      $message"
+        ;;
       *)
         echo "$message"
         ;;
     esac
   fi
 }
+
+
+# Enable verbose mode
+
+if [[ "$script_args" =~ "verbose" ]]; then
+  options["verbose"]="true"
+  verbose_message "verbose to true" "set"
+fi
 
 # Load modules
 
@@ -255,34 +271,38 @@ fi
 # Handle options
 
 process_options () {
-  options="$1"
-  case $options in
-    debug)                # option
-      # Enable debug mode
-      do_debug="true"
-      ;;
-    force)                # option
-      # Enable force mode
-      do_force="true"
-      ;;
-    yes)
-      # Answer yes to questions
-      do_yes="true"
-      ;;
-    strict)               # option
-      # Enable strict mode
-      do_strict="true"
-      ;;
-    verbose)              # option
-      # Enable verbose mode
-      do_verbose="true"
-      ;;
-    *)
-      print_options
-      exit
-      ;;
-  esac
+  option_flag="$1"
+  if [[ "$option_flag" =~ ^no ]]; then
+    option_flag="${option_flag:2}"
+    value="false"
+  else
+    value="true"
+  fi
+  options["$option_flag"]="true"
+  verbose_message "$option_flag to $value" "set"
 }
+
+# Print environment
+
+print_environment () {
+  echo "Environment (Options):"
+  for option in "${!options[@]}"; do
+    value="${options[${option}]}"
+    echo -e "$option\tis $value"
+  done
+}
+
+
+# Print defaults
+
+print_defaults () {
+  echo "Defaults:"
+  for default in "${!defaults[@]}"; do
+    value="${defaults[${default}]}"
+    echo -e "$default\tis $value"
+  done
+}
+
 
 # Handle actions
 
@@ -299,16 +319,22 @@ process_actions () {
       print_version
       exit
       ;;
+    printenv*)             # action
+      # Print environment 
+      print_environment
+      exit
+      ;;
+    printdefaults)        # action
+      # Print defaults 
+      print_defaults
+      exit
+      ;;
     *)
       print_actions
       exit
       ;;
   esac
 }
-
-# Set defaults
-
-set_defaults
 
 # Handle command line arguments
 
@@ -317,7 +343,7 @@ while test $# -gt 0; do
     --action*)            # switch
       # Action to perform
       check_value "$1" "$2"
-      action_flags="$2"
+      action_flags+=("$2")
       options["actions"]="true"
       shift 2
       ;;
@@ -349,7 +375,7 @@ while test $# -gt 0; do
     --option*)            # switch
       # Action to perform
       check_value "$1" "$2"
-      action_flags="$2"
+      option_flags+=("$2")
       options["options"]="true"
       shift 2
       ;;
@@ -373,14 +399,16 @@ done
 # Process options
 
 if [ "${options['options']}" = "true" ]; then
-  if [[ "$option_flags" =~ "," ]]; then
-    IFS="," read -r -a array <<< "$option_flags"
-    for option in "${array[@]}"; do
-      process_options "$option"
-    done
-  else
-    process_options "$option_flags"
-  fi
+  for option_flag in "${option_flags[@]}"; do
+    if [[ "$option_flag" =~ "," ]]; then
+      IFS="," read -r -a array <<< "$option_flag"
+      for option in "${array[@]}"; do
+        process_options "$option"
+      done
+    else
+      process_options "$option_flag"
+    fi
+  done
 fi
 
 # Reset defaults based on switches
@@ -390,12 +418,14 @@ reset_defaults
 # Process actions
 
 if [ "${options['actions']}" = "true" ]; then
-  if [[ "$action_flags" =~ "," ]]; then
-    IFS="," read -r -a array <<< "$action_flags"
-    for action in "${array[@]}"; do
-      process_actions "$action"
-    done
-  else
-    process_actions "$action_flags"
-  fi
+  for action_flag in "${action_flags[@]}"; do
+    if [[ "$action_flag" =~ "," ]]; then
+      IFS="," read -r -a array <<< "$action_flag"
+      for action in "${array[@]}"; do
+        process_actions "$action"
+      done
+    else
+      process_actions "$action_flag"
+    fi
+  done
 fi
