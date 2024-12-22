@@ -21,7 +21,7 @@ There are two versions of this script:
 
 just.sh - a template that should would with most sh/bash compatible shells
 
-just.bash - a template that uses bash 4.0 and greated features like associative arrays
+just.bash - a template that uses bash 4.0 and greater features like associative arrays
 
 Goals
 -----
