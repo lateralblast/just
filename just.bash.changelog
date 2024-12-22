@@ -12,3 +12,5 @@
 # Bug fixes and added associative arrays
 # 0.0.7: Sun 22 Dec 2024 19:25:16 AEDT
 # Improved defaults and options handling
+# 0.0.8: Sun 22 Dec 2024 20:26:02 AEDT
+# Improved verbose message routine

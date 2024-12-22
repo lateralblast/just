@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.0.7
+# Version:      0.0.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -64,33 +64,24 @@ set_defaults
 verbose_message () {
   message="$1"
   format="$2"
-  if [ "${options['verbose']}" = "true" ] || [ "$format" = "verbose" ]; then
-    case "$format" in
-      "execute")
-        echo "Executing:    $message"
-        ;;
-      "info")
-        echo "Information:  $message"
-        ;;
-      "notice")
-        echo "Notice:       $message"
-        ;;
-      "verbose")
-        echo "$message"
-        ;;
-      "warn")
-        echo "Warning:      $message"
-        ;;
-      "load")
-        echo "Loading:      $message"
-        ;;
-      "set")
-        echo "Setting:      $message"
-        ;;
-      *)
-        echo "$message"
-        ;;
-    esac
+  if [ "$format" = "verbose" ]; then
+    echo "$message"
+  else
+    if [ "${options['verbose']}" = "true" ]; then
+      if [[ "$format" =~ ing$ ]]; then
+        format="${format^}"
+      else
+        if [[ "$format" =~ t$ ]]; then
+          format="${format^}ing"
+        else
+          if [[ "$format" =~ e$ ]]; then
+            format="${format::-1}"
+            format="${format^}ing"
+          fi
+        fi
+      fi 
+      echo -e "$format:\t\t$message"
+    fi
   fi
 }
 
@@ -288,7 +279,7 @@ print_environment () {
   echo "Environment (Options):"
   for option in "${!options[@]}"; do
     value="${options[${option}]}"
-    echo -e "$option\tis $value"
+    echo -e "Option $option\tis set to $value"
   done
 }
 
@@ -299,7 +290,7 @@ print_defaults () {
   echo "Defaults:"
   for default in "${!defaults[@]}"; do
     value="${defaults[${default}]}"
-    echo -e "$default\tis $value"
+    echo -e "Default $default\tis set to $value"
   done
 }
 
