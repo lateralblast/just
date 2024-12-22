@@ -6,7 +6,8 @@ Just a Unix Shell script Template
 Version
 -------
 
-Current version 0.0.5
+just.sh version 0.0.6
+just.bash version 0.0.6
 
 Introduction
 ------------
@@ -14,6 +15,12 @@ Introduction
 This is intended to provide a template for writing shell scripts.
 It gathers some arguably good and bad practices I've acquired over
 the years to handle command line arguments and inline documentation.
+
+There are two versions of this script:
+
+just.sh - a template that should would with most sh/bash compatible shells
+
+just.bash - a template that uses bash 4.0 and greated features like associative arrays
 
 Goals
 -----

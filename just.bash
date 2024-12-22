@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Name:         just (Just a UNIX Shell script Template)
+# Name:         just (Just a UNIX Shell script Template [with bash features])
 # Version:      0.0.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
@@ -29,6 +29,8 @@ script_path=$( dirname "$script_file" )
 module_path="$script_path/modules"
 script_bin=$( basename "$script_file" )
 
+declare -A options
+
 # Enable verbose mode
 
 if [[ "$script_args" =~ "verbose" ]]; then
@@ -38,14 +40,14 @@ fi
 # Set defaults
 
 set_defaults () {
-  do_verbose="false"
-  do_actions="false"
-  do_options="false"
-  do_strict="false"
-  do_dryrun="false"
-  do_debug="false"
-  do_force="false"
-  do_yes="false"
+  options["verbose"]="false"
+  options["actions"]="false"
+  options["options"]="false"
+  options["strict"]="false"
+  options["dryrun"]="false"
+  options["debug"]="false"
+  options["force"]="false"
+  options["yes"]="false"
   os_name=$( uname -s )
   if [ "$os_name" = "Linux" ]; then
     os_distro=$( lsb_release -i -s 2> /dev/null )
@@ -57,7 +59,7 @@ set_defaults () {
 verbose_message () {
   message="$1"
   format="$2"
-  if [ "$do_verbose" = "true" ] || [ "$format" = "verbose" ]; then
+  if [ "${options['verbose']}" = "true" ] || [ "$format" = "verbose" ]; then
     case "$format" in
       "execute")
         echo "Executing:    $message"
@@ -99,15 +101,15 @@ fi
 # Reset defaults based on command line options
 
 reset_defaults () {
-  if [ "$do_debug" = "true" ]; then
+  if [ "${options['debug']}" = "true" ]; then
     verbose_message "Enabling debug mode" "notice"
     set -x
   fi
-  if [ "$do_strict" = "true" ]; then
+  if [ "${options['strict']}" = "true" ]; then
     verbose_message "Enabling strict mode" "notice"
     set -u
   fi
-  if [ "$do_dryrun" = "true" ]; then
+  if [ "${options['dryrun']}" = "true" ]; then
     verbose_message "Enabling dryrun mode" "notice"
   fi
 }
@@ -115,7 +117,7 @@ reset_defaults () {
 # Selective exit (don't exit when we're running in dryrun mode)
 
 do_exit () {
-  if [ "$do_dryrun" = "false" ]; then
+  if [ "${options['dryrun']}" = "false" ]; then
     exit
   fi
 }
@@ -128,7 +130,7 @@ check_value () {
   if [[ "$value" =~ "--" ]]; then
     verbose_message "Value '$value' for parameter '$parameter' looks like a parameter" "verbose"
     echo ""
-    if [ "$do_force" = "false" ]; then
+    if [ "${options['force']}" = "false" ]; then
       do_exit
     fi
   else
@@ -157,10 +159,10 @@ execute_command () {
   if [ "$privilege" = "su" ]; then
     command="sudo sh -c \"$command\""
   fi
-  if [ "$do_verbose" = "true" ]; then
+  if [ "${options['verbose']}" = "true" ]; then
     verbose_message "$command" "execute"
   fi
-  if [ "$do_dryrun" = "false" ]; then
+  if [ "${options['dryrun']}" = "false" ]; then
     eval "$command"
   fi
 }
@@ -315,28 +317,28 @@ while test $# -gt 0; do
     --action*)            # switch
       # Action to perform
       check_value "$1" "$2"
-      actions="$2"
-      do_actions="true"
+      action_flags="$2"
+      options["actions"]="true"
       shift 2
       ;;
     --debug)              # switch
       # Enable debug mode
-      do_debug="true"
+      options["debug"]="true"
       shift
       ;;
     --force)              # switch
       # Enable force mode
-      do_force="true"
+      options["force"]="true"
       shift
       ;;
     --strict)             # switch
       # Enable strict mode
-      do_strict="true"
+      options["strict"]="true"
       shift
       ;;
     --verbose)            # switch
       # Enable verbos e mode
-      do_verbose="true"
+      options["verbose"]="true"
       shift
       ;;
     --version|-V)         # switch
@@ -347,8 +349,8 @@ while test $# -gt 0; do
     --option*)            # switch
       # Action to perform
       check_value "$1" "$2"
-      actions="$2"
-      do_options="true"
+      action_flags="$2"
+      options["options"]="true"
       shift 2
       ;;
     --usage*)             # switch
@@ -370,14 +372,14 @@ done
 
 # Process options
 
-if [ "$do_options" = "true" ]; then
-  if [[ "$options" =~ "," ]]; then
-    IFS="," read -r -a array <<< "$options"
+if [ "${options['options']}" = "true" ]; then
+  if [[ "$option_flags" =~ "," ]]; then
+    IFS="," read -r -a array <<< "$option_flags"
     for option in "${array[@]}"; do
       process_options "$option"
     done
   else
-    process_options "$options"
+    process_options "$option_flags"
   fi
 fi
 
@@ -387,13 +389,13 @@ reset_defaults
 
 # Process actions
 
-if [ "$do_actions" = "true" ]; then
-  if [[ "$actions" =~ "," ]]; then
-    IFS="," read -r -a array <<< "$actions"
+if [ "${options['actions']}" = "true" ]; then
+  if [[ "$action_flags" =~ "," ]]; then
+    IFS="," read -r -a array <<< "$action_flags"
     for action in "${array[@]}"; do
       process_actions "$action"
     done
   else
-    process_actions "$actions"
+    process_actions "$action_flags"
   fi
 fi

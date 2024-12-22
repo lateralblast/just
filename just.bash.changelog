@@ -8,3 +8,5 @@
 # Improved handing for switches that take values
 # 0.0.5: Fri 20 Dec 2024 22:43:24 AEDT
 # Fixed force switch
+# 0.0.5: Sun 22 Dec 2024 11:45:27 AEDT
+# Bug fixes and added associative arrays

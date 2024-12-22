@@ -1,0 +1,12 @@
+# 0.0.1: Thu  5 Sep 2024 17:45:28 AEST
+# Initial version with some documentation
+# 0.0.2: Thu  5 Sep 2024 19:03:06 AEST
+# Added modules support
+# 0.0.3: Thu  5 Sep 2024 20:40:31 AEST
+# Added force switch/option and updated documentation
+# 0.0.4: Fri 13 Dec 2024 15:12:39 AEDT
+# Improved handing for switches that take values
+# 0.0.5: Fri 20 Dec 2024 22:43:24 AEDT
+# Fixed force switch
+# 0.0.6: Sun 22 Dec 2024 10:55:15 AEDT
+# Bug fixes
