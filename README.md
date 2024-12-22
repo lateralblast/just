@@ -7,6 +7,7 @@ Version
 -------
 
 just.sh version 0.0.6
+
 just.bash version 0.0.6
 
 Introduction
