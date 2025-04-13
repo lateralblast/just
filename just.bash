@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.0.9
+# Version:      0.1.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -19,22 +19,24 @@
 # shellcheck disable=SC1090
 # shellcheck disable=SC2129
 
-# Grab script args for some initial processing
-
-script_args="$*"
-script_file="$0"
-script_name="just"
-script_file=$( realpath "$script_file" )
-script_path=$( dirname "$script_file" )
-module_path="$script_path/modules"
-script_bin=$( basename "$script_file" )
-
 # Create arrays for options and actions
 
+declare -A os
+declare -A script
 declare -A options 
 declare -A defaults 
 declare -a option_flags
 declare -a action_flags
+
+# Grab script args for some initial processing
+
+script['args']="$*"
+script['file']="$0"
+script['name']="just"
+script['file']=$( realpath "${script['file']}" )
+script['path']=$( dirname "${script['file']}" )
+script['modulepath']="${script['path']}/modules"
+script['bin']=$( basename "${script['file']}" )
 
 # Set defaults
 
@@ -51,9 +53,9 @@ set_defaults () {
     value="${defaults[${default}]}"
     options["$default"]="$value"
   done
-  os_name=$( uname -s )
-  if [ "$os_name" = "Linux" ]; then
-    os_distro=$( lsb_release -i -s 2> /dev/null )
+  os['name']=$( uname -s )
+  if [ "${os['name']}" = "Linux" ]; then
+    os['distro']=$( lsb_release -i -s 2> /dev/null )
   fi
 }
 
@@ -64,23 +66,29 @@ set_defaults
 verbose_message () {
   message="$1"
   format="$2"
-  if [ "$format" = "verbose" ]; then
-    echo "$message"
+  if [ "${format}" = "verbose" ]; then
+    echo "${message}"
   else
     if [ "${options['verbose']}" = "true" ]; then
-      if [[ "$format" =~ ing$ ]]; then
+      if [[ "${format}" =~ ing$ ]]; then
         format="${format^}"
       else
-        if [[ "$format" =~ t$ ]]; then
-          format="${format^}ing"
+        if [[ "${format}" =~ t$ ]]; then
+          format="${format^}ting"
         else
-          if [[ "$format" =~ e$ ]]; then
+          if [[ "${format}" =~ e$ ]]; then
             format="${format::-1}"
             format="${format^}ing"
           fi
         fi
       fi 
-      echo -e "$format:\t\t$message"
+      length="${#format}"
+      if [ "${length}" -lt 6 ]; then
+        tabs="\t\t"
+      else
+        tabs="\t"
+      fi
+      echo -e "${format}:${tabs}${message}"
     fi
   fi
 }
@@ -88,20 +96,20 @@ verbose_message () {
 
 # Enable verbose mode
 
-if [[ "$script_args" =~ "verbose" ]]; then
+if [[ "${script['args']}" =~ "verbose" ]]; then
   options["verbose"]="true"
   verbose_message "verbose to true" "set"
 fi
 
 # Load modules
 
-if [ -d "$module_path" ]; then
-  modules=$( find "$module_path" -name "*.sh" )
-  for module in $modules; do
-    if [[ "$script_args" =~ "verbose" ]]; then
-     verbose_message "Module $module" "load"
+if [ -d "${script['modulepath']}" ]; then
+  modules=$( find "${script['modulepath']}" -name "*.sh" )
+  for module in ${modules}; do
+    if [[ "${script['args']}" =~ "verbose" ]]; then
+     verbose_message "Module ${module}" "load"
     fi
-    . "$module"
+    . "${module}"
   done
 fi
 
@@ -132,22 +140,22 @@ do_exit () {
 # check value (make sure that command line arguments that take values have values)
 
 check_value () {
-  parameter="$1"
+  param="$1"
   value="$2"
-  if [[ "$value" =~ "--" ]]; then
-    verbose_message "Value '$value' for parameter '$parameter' looks like a parameter" "verbose"
+  if [[ "${value}" =~ "--" ]]; then
+    verbose_message "Value '$value' for parameter '$param' looks like a parameter" "verbose"
     echo ""
     if [ "${options['force']}" = "false" ]; then
       do_exit
     fi
   else
-    if [ "$value" = "" ]; then
-      verbose_message "No value given for parameter $parameter" "verbose"
+    if [ "${value}" = "" ]; then
+      verbose_message "No value given for parameter $param" "verbose"
       echo ""
-      if [[ "$parameter" =~ "option" ]]; then
+      if [[ "${param}" =~ "option" ]]; then
         print_options
       else
-        if [[ "$parameter" =~ "action" ]]; then
+        if [[ "${param}" =~ "action" ]]; then
           print_actions
         else
           print_help
@@ -163,50 +171,50 @@ check_value () {
 execute_command () {
   command="$1"
   privilege="$2"
-  if [ "$privilege" = "su" ]; then
-    command="sudo sh -c \"$command\""
+  if [ "${privilege}" = "su" ]; then
+    command="sudo sh -c \"${command}\""
   fi
   if [ "${options['verbose']}" = "true" ]; then
-    verbose_message "$command" "execute"
+    verbose_message "${command}" "execute"
   fi
   if [ "${options['dryrun']}" = "false" ]; then
-    eval "$command"
+    eval "${command}"
   fi
 }
 
 # Print help/usage insformation
 
 print_help () {
-  script_help=$( grep -A1 "# switch" "$script_file" |sed "s/^--//g" |sed "s/# switch//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" | sed "/^\s*$/d" )
-  echo "Usage: $script_bin --switch [value]"
+  script['help']=$( grep -A1 "# switch" "${script['file']}" |sed "s/^--//g" |sed "s/# switch//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" | sed "/^\s*$/d" )
+  echo "Usage: ${script['bin']} --switch [value]"
   echo ""
   echo "switches:"
   echo "--------"
-  echo "$script_help"
+  echo "${script['help']}"
   echo ""
 }
 
 # Print actions
 
 print_actions () {
-  script_actions=$( grep -A1 "# action" "$script_file" |sed "s/^--//g" |sed "s/# action//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
-  echo "Usage: $script_bin --action(s) [value]"
+  script['actions']=$( grep -A1 "# action" "${script['file']}" |sed "s/^--//g" |sed "s/# action//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
+  echo "Usage: ${script['bin']} --action(s) [value]"
   echo ""
   echo "actions:"
   echo "-------"
-  echo "$script_actions"
+  echo "${script['actions']}"
   echo ""
 }
 
 # Print options
 
 print_options () {
-  script_options=$( grep -A1 "# option" "$script_file" |sed "s/^--//g" |sed "s/# option//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
-  echo "Usage: $script_bin --option(s) [value]"
+  script['options']=$( grep -A1 "# option" "${script['file']}" |sed "s/^--//g" |sed "s/# option//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
+  echo "Usage: ${script['bin']} --option(s) [value]"
   echo ""
   echo "options:"
   echo "-------"
-  echo "$script_options"
+  echo "${script['options']}"
   echo ""
 }
 
@@ -239,8 +247,8 @@ print_usage () {
 # Print version information
 
 print_version () {
-  script_vers=$( grep '^# Version' < "$0" | awk '{print $3}' )
-  echo "$script_vers"
+  script['version']=$( grep '^# Version' < "$0" | awk '{print $3}' )
+  echo "${script['version']}"
 }
 
 # Run Shellcheck
@@ -248,13 +256,13 @@ print_version () {
 check_shellcheck () {
   bin_test=$( command -v shellcheck | grep -c shellcheck )
   if [ ! "$bin_test" = "0" ]; then
-    shellcheck "$script_file"
+    shellcheck "${script['file']}"
   fi
 }
 
 # Do some early command line argument processing
 
-if [ "$script_args" = "" ]; then
+if [ "${script['args']}" = "" ]; then
   print_help
   exit
 fi
@@ -263,14 +271,14 @@ fi
 
 process_options () {
   option_flag="$1"
-  if [[ "$option_flag" =~ ^no ]]; then
+  if [[ "${option_flag}" =~ ^no ]]; then
     option_flag="${option_flag:2}"
     value="false"
   else
     value="true"
   fi
-  options["$option_flag"]="true"
-  verbose_message "$option_flag to $value" "set"
+  options["${option_flag}"]="true"
+  verbose_message "${option_flag} to ${value}" "set"
 }
 
 # Print environment
@@ -279,7 +287,7 @@ print_environment () {
   echo "Environment (Options):"
   for option in "${!options[@]}"; do
     value="${options[${option}]}"
-    echo -e "Option $option\tis set to $value"
+    echo -e "Option ${option}\tis set to ${value}"
   done
 }
 
@@ -290,7 +298,7 @@ print_defaults () {
   echo "Defaults:"
   for default in "${!defaults[@]}"; do
     value="${defaults[${default}]}"
-    echo -e "Default $default\tis set to $value"
+    echo -e "Default ${default}\tis set to ${value}"
   done
 }
 
@@ -379,7 +387,7 @@ while test $# -gt 0; do
       # Action to perform
       check_value "$1" "$2"
       usage="$2"
-      print_usage "$usage"
+      print_usage "${usage}"
       shift 2
       exit
       ;;
@@ -401,13 +409,13 @@ done
 
 if [ "${options['options']}" = "true" ]; then
   for option_flag in "${option_flags[@]}"; do
-    if [[ "$option_flag" =~ "," ]]; then
-      IFS="," read -r -a array <<< "$option_flag"
+    if [[ "${option_flag}" =~ "," ]]; then
+      IFS="," read -r -a array <<< "${option_flag}"
       for option in "${array[@]}"; do
-        process_options "$option"
+        process_options "${option}"
       done
     else
-      process_options "$option_flag"
+      process_options "${option_flag}"
     fi
   done
 fi
@@ -420,13 +428,13 @@ reset_defaults
 
 if [ "${options['actions']}" = "true" ]; then
   for action_flag in "${action_flags[@]}"; do
-    if [[ "$action_flag" =~ "," ]]; then
-      IFS="," read -r -a array <<< "$action_flag"
+    if [[ "${action_flag}" =~ "," ]]; then
+      IFS="," read -r -a array <<< "${action_flag}"
       for action in "${array[@]}"; do
-        process_actions "$action"
+        process_actions "${action}"
       done
     else
-      process_actions "$action_flag"
+      process_actions "${action_flag}"
     fi
   done
 fi
