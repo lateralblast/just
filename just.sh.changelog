@@ -10,9 +10,7 @@
 # Fixed force switch
 # 0.0.6: Sun 22 Dec 2024 10:55:15 AEDT
 # Bug fixes
-# 0.0.9: Mon 23 Dec 2024 09:20:30 AEDT
+# 0.0.7: Mon 23 Dec 2024 09:20:30 AEDT
 # Bugfixes and improvements
-# 0.1.0: Sun Apr 13 13:08:36 AEST 2025
-# Updates
-# 0.1.1: Sun Apr 13 13:17:33 AEST 2025
-# Formatting updates
+# 0.0.8: Sun Apr 13 16:29:54 AEST 2025
+# Added warning message function

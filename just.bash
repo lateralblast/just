@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.1.1
+# Version:      0.1.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -69,37 +69,40 @@ verbose_message () {
   if [ "${format}" = "verbose" ]; then
     echo "${message}"
   else
-    if [ "${options['verbose']}" = "true" ]; then
-      if [[ "${format}" =~ ing$ ]]; then
-        format="${format^}"
-      else
-        if [[ "${format}" =~ t$ ]]; then
-          format="${format^}ting"
+    if [[ "${format}" =~ warn ]]; then
+      echo -e "Warning:\t${message}"
+    else
+      if [ "${options['verbose']}" = "true" ]; then
+        if [[ "${format}" =~ ing$ ]]; then
+          format="${format^}"
         else
-          if [[ "${format}" =~ e$ ]]; then
-            format="${format::-1}"
-            format="${format^}ing"
+          if [[ "${format}" =~ t$ ]]; then
+            format="${format^}ting"
+          else
+            if [[ "${format}" =~ e$ ]]; then
+              format="${format::-1}"
+              format="${format^}ing"
+            fi
           fi
+        fi 
+        length="${#format}"
+        if [ "${length}" -lt 6 ]; then
+          tabs="\t\t"
+        else
+          tabs="\t"
         fi
-      fi 
-      length="${#format}"
-      if [ "${length}" -lt 6 ]; then
-        tabs="\t\t"
-      else
-        tabs="\t"
+        echo -e "${format}:${tabs}${message}"
       fi
-      echo -e "${format}:${tabs}${message}"
     fi
   fi
 }
 
+# Warning message
 
-# Enable verbose mode
-
-if [[ "${script['args']}" =~ "verbose" ]]; then
-  options["verbose"]="true"
-  verbose_message "verbose to true" "set"
-fi
+warning_message () {
+  message="$1"
+  verbose_message "${message}" "warn"
+}
 
 # Load modules
 
