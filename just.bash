@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.1.2
+# Version:      0.1.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -19,16 +19,15 @@
 # shellcheck disable=SC1090
 # shellcheck disable=SC2129
 
-# Create arrays for options and actions
+# Create arrays
 
 declare -A os
 declare -A script
 declare -A options 
-declare -A defaults 
 declare -a option_flags
 declare -a action_flags
 
-# Grab script args for some initial processing
+# Grab script information and put it into an associative array
 
 script['args']="$*"
 script['file']="$0"
@@ -38,21 +37,19 @@ script['path']=$( dirname "${script['file']}" )
 script['modulepath']="${script['path']}/modules"
 script['bin']=$( basename "${script['file']}" )
 
+# Function: set_defaults
+#
 # Set defaults
 
 set_defaults () {
-  defaults["verbose"]="false"
-  defaults["actions"]="false"
-  defaults["options"]="false"
-  defaults["strict"]="false"
-  defaults["dryrun"]="false"
-  defaults["debug"]="false"
-  defaults["force"]="false"
-  defaults["yes"]="false"
-  for default in "${!defaults[@]}"; do
-    value="${defaults[${default}]}"
-    options["$default"]="$value"
-  done
+  options['verbose']="false"  # option - Verbose mode
+  options['strict']="false"   # option - Strict mode
+  options['dryrun']="false"   # option - Dryrun mode
+  options['debug']="false"    # option - Debug mode
+  options['force']="false"    # option - Force actions
+  options['yes']="false"      # option - Answer yes to questions
+  options['actions']="false"  
+  options['options']="false"  
   os['name']=$( uname -s )
   if [ "${os['name']}" = "Linux" ]; then
     os['distro']=$( lsb_release -i -s 2> /dev/null )
@@ -61,9 +58,11 @@ set_defaults () {
 
 set_defaults
 
-# Verbose message
+# Function: print_message
+#
+# Print message
 
-verbose_message () {
+print_message () {
   message="$1"
   format="$2"
   if [ "${format}" = "verbose" ]; then
@@ -77,16 +76,23 @@ verbose_message () {
           format="${format^}"
         else
           if [[ "${format}" =~ t$ ]]; then
-            format="${format^}ting"
+            if [ "${format}" = "test" ]; then
+              format="${format}ing"
+            else
+              format="${format^}ting"
+            fi
           else
             if [[ "${format}" =~ e$ ]]; then
-              format="${format::-1}"
-              format="${format^}ing"
+              if [[ ! "${format}" =~ otice ]]; then
+                format="${format::-1}"
+                format="${format^}ing"
+              fi
             fi
           fi
         fi 
+        format="${format^}"
         length="${#format}"
-        if [ "${length}" -lt 6 ]; then
+        if [ "${length}" -lt 7 ]; then
           tabs="\t\t"
         else
           tabs="\t"
@@ -97,11 +103,22 @@ verbose_message () {
   fi
 }
 
+# Function: warning_message
+#
 # Warning message
 
 warning_message () {
   message="$1"
-  verbose_message "${message}" "warn"
+  print_message "${message}" "warn"
+}
+
+# Function: execute_message
+#
+#  Print command
+
+execute_message () {
+  message="$1"
+  print_message "${message}" "execute"
 }
 
 # Load modules
@@ -110,28 +127,32 @@ if [ -d "${script['modulepath']}" ]; then
   modules=$( find "${script['modulepath']}" -name "*.sh" )
   for module in ${modules}; do
     if [[ "${script['args']}" =~ "verbose" ]]; then
-     verbose_message "Module ${module}" "load"
+     print_message "Module ${module}" "load"
     fi
     . "${module}"
   done
 fi
 
+# Function: reset_defaults
+#
 # Reset defaults based on command line options
 
 reset_defaults () {
   if [ "${options['debug']}" = "true" ]; then
-    verbose_message "Enabling debug mode" "notice"
+    print_message "Enabling debug mode" "notice"
     set -x
   fi
   if [ "${options['strict']}" = "true" ]; then
-    verbose_message "Enabling strict mode" "notice"
+    print_message "Enabling strict mode" "notice"
     set -u
   fi
   if [ "${options['dryrun']}" = "true" ]; then
-    verbose_message "Enabling dryrun mode" "notice"
+    print_message "Enabling dryrun mode" "notice"
   fi
 }
 
+# Function: do_exit
+#
 # Selective exit (don't exit when we're running in dryrun mode)
 
 do_exit () {
@@ -140,20 +161,22 @@ do_exit () {
   fi
 }
 
+# Function: check_value
+#
 # check value (make sure that command line arguments that take values have values)
 
 check_value () {
   param="$1"
   value="$2"
   if [[ "${value}" =~ "--" ]]; then
-    verbose_message "Value '$value' for parameter '$param' looks like a parameter" "verbose"
+    print_message "Value '$value' for parameter '$param' looks like a parameter" "verbose"
     echo ""
     if [ "${options['force']}" = "false" ]; then
       do_exit
     fi
   else
     if [ "${value}" = "" ]; then
-      verbose_message "No value given for parameter $param" "verbose"
+      print_message "No value given for parameter $param" "verbose"
       echo ""
       if [[ "${param}" =~ "option" ]]; then
         print_options
@@ -169,58 +192,85 @@ check_value () {
   fi
 }
 
+# Function: execute_command
+#
 # Execute command
 
 execute_command () {
   command="$1"
   privilege="$2"
-  if [ "${privilege}" = "su" ]; then
+  if [[ "${privilege}" =~ su ]]; then
     command="sudo sh -c \"${command}\""
   fi
   if [ "${options['verbose']}" = "true" ]; then
-    verbose_message "${command}" "execute"
+    execute_message "${command}"
   fi
   if [ "${options['dryrun']}" = "false" ]; then
     eval "${command}"
   fi
 }
 
+# Function: print_info
+#
+# Print information
+
+print_info () {
+  info="$1"
+  echo ""
+  echo "Usage: ${script['bin']} --${info} [value]"
+  echo ""
+  echo "${info}(s):"
+  echo "---------"
+  while read line; do
+    if [[ "${line}" =~ .*"# ${info}".* ]]; then
+      if [[ "${info}" =~ option ]]; then
+        IFS='-' read -r param desc <<< "${line}"
+        IFS=']' read -r param default <<< ${param}
+        IFS='[' read -r _ param <<< ${param}
+        param="${param//\'/}"
+        IFS='=' read -r _ default <<< ${default}
+        default="${default//\'/}"
+        default="${default//\"/}"
+        default="${default// /}"
+        default="${default/\#${info}/}"
+        param="${param} (default = ${default})"
+      else
+        IFS='#' read -r param desc <<< "${line}"
+        desc="${desc/${info} -/}"
+      fi
+      echo "${param}"
+      echo "  ${desc}"
+    fi
+  done < "${script['file']}"
+  echo ""
+}
+
+# Function: print_help
+#
 # Print help/usage insformation
 
 print_help () {
-  script['help']=$( grep -A1 "# switch" "${script['file']}" |sed "s/^--//g" |sed "s/# switch//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" | sed "/^\s*$/d" )
-  echo "Usage: ${script['bin']} --switch [value]"
-  echo ""
-  echo "switches:"
-  echo "--------"
-  echo "${script['help']}"
-  echo ""
+  print_info "switch"
 }
 
+# Function print_actions
+#
 # Print actions
 
 print_actions () {
-  script['actions']=$( grep -A1 "# action" "${script['file']}" |sed "s/^--//g" |sed "s/# action//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
-  echo "Usage: ${script['bin']} --action(s) [value]"
-  echo ""
-  echo "actions:"
-  echo "-------"
-  echo "${script['actions']}"
-  echo ""
+  print_info "action"
 }
 
+# Function: print_options
+#
 # Print options
 
 print_options () {
-  script['options']=$( grep -A1 "# option" "${script['file']}" |sed "s/^--//g" |sed "s/# option//g" | tr -s " " |grep -Ev "=|echo" |sed "s/#/ /g" |sed "/^\s*$/d" )
-  echo "Usage: ${script['bin']} --option(s) [value]"
-  echo ""
-  echo "options:"
-  echo "-------"
-  echo "${script['options']}"
-  echo ""
+  print_info "option"
 }
 
+# Function: print_usage
+#
 # Print Usage
 
 print_usage () {
@@ -247,6 +297,8 @@ print_usage () {
   esac
 }
 
+# Function: print_version
+#
 # Print version information
 
 print_version () {
@@ -254,6 +306,8 @@ print_version () {
   echo "${script['version']}"
 }
 
+# Function: check_shellcheck
+#
 # Run Shellcheck
 
 check_shellcheck () {
@@ -270,6 +324,8 @@ if [ "${script['args']}" = "" ]; then
   exit
 fi
 
+# Function: process_options
+#
 # Handle options
 
 process_options () {
@@ -280,10 +336,12 @@ process_options () {
   else
     value="true"
   fi
-  options["${option_flag}"]="true"
-  verbose_message "${option_flag} to ${value}" "set"
+  options['${option_flag}']="true"
+  print_message "${option_flag} to ${value}" "set"
 }
 
+# Function: print_environment
+#
 # Print environment
 
 print_environment () {
@@ -294,45 +352,42 @@ print_environment () {
   done
 }
 
-
+# Function: print_defaults
+#
 # Print defaults
 
 print_defaults () {
   echo "Defaults:"
-  for default in "${!defaults[@]}"; do
-    value="${defaults[${default}]}"
+  for default in "${!options[@]}"; do
+    value="${options[${default}]}"
     echo -e "Default ${default}\tis set to ${value}"
   done
 }
 
-
+# Function: process_actions
+#
 # Handle actions
 
 process_actions () {
   actions="$1"
   case $actions in
-    help)                 # action
-      # Print actions help
+    help)                 # action - Print actions help
       print_actions
       exit
       ;;
-    version)              # action
-      # Print version
+    version)              # action - Print version
       print_version
       exit
       ;;
-    printenv*)             # action
-      # Print environment 
+    printenv*)             # action - Print environment
       print_environment
       exit
       ;;
-    printdefaults)        # action
-      # Print defaults 
+    printdefaults)        # action - Print defaults
       print_defaults
       exit
       ;;
-    shellcheck)           # action
-      # Shellcheck script
+    shellcheck)           # action - Shellcheck script
       check_shellcheck
       exit
       ;;
@@ -347,57 +402,52 @@ process_actions () {
 
 while test $# -gt 0; do
   case $1 in
-    --action*)            # switch
-      # Action to perform
+    --action*)            # switch - Action to perform
       check_value "$1" "$2"
       action_flags+=("$2")
-      options["actions"]="true"
+      options['actions']="true"
       shift 2
       ;;
-    --debug)              # switch
-      # Enable debug mode
-      options["debug"]="true"
+    --debug)              # switch - Enable debug mode
+      options['debug']="true"
       shift
       ;;
-    --force)              # switch
-      # Enable force mode
-      options["force"]="true"
+    --dryrun)              # switch - Enable debug mode
+      options['dryrun']="true"
       shift
       ;;
-    --strict)             # switch
-      # Enable strict mode
-      options["strict"]="true"
+    --force)              # switch - Enable force mode
+      options['force']="true"
       shift
       ;;
-    --verbose)            # switch
-      # Enable verbos e mode
-      options["verbose"]="true"
+    --help|-h)            # switch - Print help information
+      print_help
       shift
-      ;;
-    --version|-V)         # switch
-      # Print version information
-      print_version
       exit
       ;;
-    --option*)            # switch
-      # Action to perform
+    --option*)            # switch - Action to perform
       check_value "$1" "$2"
       option_flags+=("$2")
-      options["options"]="true"
+      options['options']="true"
       shift 2
       ;;
-    --usage*)             # switch
-      # Action to perform
+    --strict)             # switch - Enable strict mode
+      options['strict']="true"
+      shift
+      ;;
+    --usage)             # switch - Action to perform
       check_value "$1" "$2"
       usage="$2"
       print_usage "${usage}"
       shift 2
       exit
       ;;
-    --help|-h)            # switch
-      # Print help information
-      print_help
+    --verbose)            # switch - Enable verbos e mode
+      options['verbose']="true"
       shift
+      ;;
+    --version|-V)         # switch - Print version information
+      print_version
       exit
       ;;
     *)
