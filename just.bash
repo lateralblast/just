@@ -215,7 +215,7 @@ execute_command () {
 print_info () {
   info="$1"
   echo ""
-  echo "Usage: ${script['bin']} --action [action] --${info} [${info}]"
+  echo "Usage: ${script['bin']} --action(s) [action(,action)] --option(s) [option(,option)]"
   echo ""
   echo "${info}(s):"
   echo "---------"
@@ -377,7 +377,7 @@ process_actions () {
       print_version
       exit
       ;;
-    printenv*)             # action - Print environment
+    printenv*)            # action - Print environment
       print_environment
       exit
       ;;
