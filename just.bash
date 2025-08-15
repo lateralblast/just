@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.1.4
+# Version:      0.1.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -24,8 +24,8 @@
 declare -A os
 declare -A script
 declare -A options 
-declare -a option_flags
-declare -a action_flags
+declare -a options_list
+declare -a actions_list
 
 # Grab script information and put it into an associative array
 
@@ -217,18 +217,18 @@ execute_command () {
 print_info () {
   info="$1"
   echo ""
-  echo "Usage: ${script['bin']} --${info} [value]"
+  echo "Usage: ${script['bin']} --action [action] --${info} [${info}]"
   echo ""
   echo "${info}(s):"
   echo "---------"
-  while read line; do
+  while read -r line; do
     if [[ "${line}" =~ .*"# ${info}".* ]]; then
       if [[ "${info}" =~ option ]]; then
         IFS='-' read -r param desc <<< "${line}"
-        IFS=']' read -r param default <<< ${param}
-        IFS='[' read -r _ param <<< ${param}
+        IFS=']' read -r param default <<< "${param}"
+        IFS='[' read -r _ param <<< "${param}"
         param="${param//\'/}"
-        IFS='=' read -r _ default <<< ${default}
+        IFS='=' read -r _ default <<< "${default}"
         default="${default//\'/}"
         default="${default//\"/}"
         default="${default// /}"
@@ -329,15 +329,15 @@ fi
 # Handle options
 
 process_options () {
-  option_flag="$1"
-  if [[ "${option_flag}" =~ ^no ]]; then
-    option_flag="${option_flag:2}"
+  option="$1"
+  if [[ "${option}" =~ ^no ]]; then
+    option="${option:2}"
     value="false"
   else
     value="true"
   fi
-  options['${option_flag}']="true"
-  print_message "${option_flag} to ${value}" "set"
+  options["${option}"]="true"
+  print_message "${option} to ${value}" "set"
 }
 
 # Function: print_environment
@@ -404,8 +404,7 @@ while test $# -gt 0; do
   case $1 in
     --action*)            # switch - Action to perform
       check_value "$1" "$2"
-      action_flags+=("$2")
-      options['actions']="true"
+      actions_list+=("$2")
       shift 2
       ;;
     --debug)              # switch - Enable debug mode
@@ -427,8 +426,7 @@ while test $# -gt 0; do
       ;;
     --option*)            # switch - Action to perform
       check_value "$1" "$2"
-      option_flags+=("$2")
-      options['options']="true"
+      options_list+=("$2")
       shift 2
       ;;
     --strict)             # switch - Enable strict mode
@@ -460,15 +458,15 @@ done
 
 # Process options
 
-if [ "${options['options']}" = "true" ]; then
-  for option_flag in "${option_flags[@]}"; do
-    if [[ "${option_flag}" =~ "," ]]; then
-      IFS="," read -r -a array <<< "${option_flag}"
-      for option in "${array[@]}"; do
-        process_options "${option}"
+if [ -n "${options_list[*]}" ]; then
+  for list in "${options_list[@]}"; do
+    if [[ "${list}" =~ "," ]]; then
+      IFS="," read -r -a array <<< "${list[*]}"
+      for item in "${array[@]}"; do
+        process_options "${item}"
       done
     else
-      process_options "${option_flag}"
+      process_options "${list}"
     fi
   done
 fi
@@ -479,15 +477,15 @@ reset_defaults
 
 # Process actions
 
-if [ "${options['actions']}" = "true" ]; then
-  for action_flag in "${action_flags[@]}"; do
-    if [[ "${action_flag}" =~ "," ]]; then
-      IFS="," read -r -a array <<< "${action_flag}"
-      for action in "${array[@]}"; do
-        process_actions "${action}"
+if [ -n "${actions_list[*]}" ]; then
+  for list in "${actions_list[@]}"; do
+    if [[ "${list}" =~ "," ]]; then
+      IFS="," read -r -a array <<< "${list[*]}"
+      for item in "${array[@]}"; do
+        process_actions "${item}"
       done
     else
-      process_actions "${action_flag}"
+      process_actions "${list}"
     fi
   done
 fi
