@@ -48,8 +48,6 @@ set_defaults () {
   options['debug']="false"    # option - Debug mode
   options['force']="false"    # option - Force actions
   options['yes']="false"      # option - Answer yes to questions
-  options['actions']="false"  
-  options['options']="false"  
   os['name']=$( uname -s )
   if [ "${os['name']}" = "Linux" ]; then
     os['distro']=$( lsb_release -i -s 2> /dev/null )
