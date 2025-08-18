@@ -23,6 +23,13 @@ just.sh - a template that should would with most sh/bash compatible shells
 
 just.bash - a template that uses bash 4.0 and greater features like associative arrays
 
+License
+-------
+
+CC BY-SA: https://creativecommons.org/licenses/by-sa/4.0/
+
+Fund me here: https://ko-fi.com/richardatlateralblast
+
 Goals
 -----
 
