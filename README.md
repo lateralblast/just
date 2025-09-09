@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-just.bash version 0.1.5
+just.bash version 0.2.1
 
 just.sh version 0.0.8
 
@@ -123,14 +123,32 @@ a separate help function, and thus have to keep the two in sync, you can use tag
 statement, which the print_help function will process to print help information.
 
 The format of the embedded help information tags is the case followed by a hash, and a commented
-description next to the case, separated by a hyphen e.g.
+description next to the case, separated by a colon e.g.
 
 ```
---action*)            # switch - Action to perform
+--action*)            # switch : Action to perform
   check_value "$1" "$2"
   actions="$2"
   do_actions="true"
   shift 2
+  ;;
+```
+
+Actions can also be expressed independently. e.g.
+
+```
+--createiso)            # switch - Create ISO
+  actions_list+=("createiso")
+  shift
+  ;;
+```
+
+Options can also be expressed independantly, e.g.
+
+```
+--debug)                # switch - Enable debug mode
+  options['debug']="true"
+  shift
   ;;
 ```
 
@@ -151,7 +169,7 @@ Options
 Like the print_help function, print_options works on tags, e.g.
 
 ```
-debug)                # option - Enable debug mode
+debug)                # option : Enable debug mode
   do_debug="true"
   ;;
 ```
@@ -179,7 +197,7 @@ Actions
 Like the print_help function, print_actions works on tags, e.g.
 
 ```
-help)                 # action
+help)                 # action : Display help information
   # Print actions help
   print_actions
   exit

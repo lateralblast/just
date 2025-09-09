@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.1.5
+# Version:      0.2.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -42,15 +42,21 @@ script['bin']=$( basename "${script['file']}" )
 # Set defaults
 
 set_defaults () {
-  options['verbose']="false"  # option - Verbose mode
-  options['strict']="false"   # option - Strict mode
-  options['dryrun']="false"   # option - Dryrun mode
-  options['debug']="false"    # option - Debug mode
-  options['force']="false"    # option - Force actions
-  options['yes']="false"      # option - Answer yes to questions
+  options['verbose']="false"  # option : Verbose mode
+  options['strict']="false"   # option : Strict mode
+  options['dryrun']="false"   # option : Dryrun mode
+  options['debug']="false"    # option : Debug mode
+  options['force']="false"    # option : Force actions
+  options['mask']="false"     # option : Mask identifiers
+  options['yes']="false"      # option : Answer yes to questions
   os['name']=$( uname -s )
   if [ "${os['name']}" = "Linux" ]; then
-    os['distro']=$( lsb_release -i -s 2> /dev/null )
+    lsb_check=$( command -v lsb_release )
+    if [ -n "${lsb_check}" ]; then 
+      os['distro']=$( lsb_release -i -s 2 | sed 's/"//g' > /dev/null )
+    else
+      os['distro']=$( hostnamectl | grep "Operating System" | awk '{print $3}' )
+    fi
   fi
 }
 
@@ -217,24 +223,31 @@ print_info () {
   echo ""
   echo "Usage: ${script['bin']} --action(s) [action(,action)] --option(s) [option(,option)]"
   echo ""
-  echo "${info}(s):"
+  if [[ ${info} =~ switch ]]; then
+    echo "${info}(es):"
+  else
+    echo "${info}(s):"
+  fi
   echo "---------"
   while read -r line; do
     if [[ "${line}" =~ .*"# ${info}".* ]]; then
       if [[ "${info}" =~ option ]]; then
-        IFS='-' read -r param desc <<< "${line}"
+        IFS=':' read -r param desc <<< "${line}"
         IFS=']' read -r param default <<< "${param}"
         IFS='[' read -r _ param <<< "${param}"
         param="${param//\'/}"
-        IFS='=' read -r _ default <<< "${default}"
-        default="${default//\'/}"
-        default="${default//\"/}"
-        default="${default// /}"
-        default="${default/\#${info}/}"
+        default="${options[${param}]}"
+        if [ "${param}" = "mask" ]; then
+          default="false"
+        else
+          if [ "${options['mask']}" = "true" ]; then
+            default="${default/${script['user']}/user}"
+          fi
+        fi
         param="${param} (default = ${default})"
       else
         IFS='#' read -r param desc <<< "${line}"
-        desc="${desc/${info} -/}"
+        desc="${desc/${info} :/}"
       fi
       echo "${param}"
       echo "  ${desc}"
@@ -369,23 +382,23 @@ print_defaults () {
 process_actions () {
   actions="$1"
   case $actions in
-    help)                 # action - Print actions help
+    help)                 # action : Print actions help
       print_actions
       exit
       ;;
-    version)              # action - Print version
+    version)              # action : Print version
       print_version
       exit
       ;;
-    printenv*)            # action - Print environment
+    printenv*)            # action : Print environment
       print_environment
       exit
       ;;
-    printdefaults)        # action - Print defaults
+    printdefaults)        # action : Print defaults
       print_defaults
       exit
       ;;
-    shellcheck)           # action - Shellcheck script
+    shellcheck)           # action : Shellcheck script
       check_shellcheck
       exit
       ;;
@@ -396,53 +409,67 @@ process_actions () {
   esac
 }
 
+# Handle mask option
+
+if [[ $@ =~ --option ]] && [[ $@ =~ mask ]]; then
+  options['mask']="true"
+fi
+
 # Handle command line arguments
 
 while test $# -gt 0; do
   case $1 in
-    --action*)            # switch - Action to perform
+    --action*)              # switch : Action to perform
       check_value "$1" "$2"
       actions_list+=("$2")
       shift 2
       ;;
-    --debug)              # switch - Enable debug mode
+    --debug)                # switch : Enable debug mode
       options['debug']="true"
       shift
       ;;
-    --dryrun)              # switch - Enable debug mode
+    --dryrun)               # switch : Enable debug mode
       options['dryrun']="true"
       shift
       ;;
-    --force)              # switch - Enable force mode
+    --force)                # switch : Enable force mode
       options['force']="true"
       shift
       ;;
-    --help|-h)            # switch - Print help information
+    --help|-h)              # switch : Print help information
       print_help
       shift
       exit
       ;;
-    --option*)            # switch - Action to perform
+    --mask)                 # switch : Mask identifiers
+      options['mask']="true"
+      shift
+      ;;
+    --option*)              # switch : Action to perform
       check_value "$1" "$2"
       options_list+=("$2")
       shift 2
       ;;
-    --strict)             # switch - Enable strict mode
+    --shellcheck)           # switch - Run shellcheck
+      actions_list+=("shellcheck")
+      shift
+      ;;
+    --strict)               # switch : Enable strict mode
       options['strict']="true"
       shift
       ;;
-    --usage)             # switch - Action to perform
+    --usage)                # switch : Action to perform
       check_value "$1" "$2"
       usage="$2"
       print_usage "${usage}"
       shift 2
       exit
       ;;
-    --verbose)            # switch - Enable verbos e mode
+    --verbose)              # switch : Enable verbose mode
       options['verbose']="true"
       shift
       ;;
-    --version|-V)         # switch - Print version information
+    --version|-V)           # switch : Print version information
       print_version
       exit
       ;;
