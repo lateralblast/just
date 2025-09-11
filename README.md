@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-just.bash version 0.2.1
+just.bash version 0.2.3
 
 just.sh version 0.0.8
 

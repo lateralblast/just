@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.2.1
+# Version:      0.2.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -107,6 +107,15 @@ print_message () {
   fi
 }
 
+# Function: verbose_message
+#
+# Verbose message
+
+verbose_message () {
+  message="$1"
+  print_message "${message}" "verbose"
+}
+
 # Function: warning_message
 #
 # Warning message
@@ -123,6 +132,24 @@ warning_message () {
 execute_message () {
   message="$1"
   print_message "${message}" "execute"
+}
+
+# Function: notice_message
+#
+# Notice message
+
+notice_message () {
+  message="$1"
+  verbose_message "${message}" "notice"
+}
+
+# Function: notice_message
+#
+# Information Message
+
+information_message () {
+  message="$1"
+  verbose_message "${message}" "info"
 }
 
 # Load modules
@@ -347,7 +374,7 @@ process_options () {
   else
     value="true"
   fi
-  options["${option}"]="true"
+  options["${option}"]="${value}"
   print_message "${option} to ${value}" "set"
 }
 
