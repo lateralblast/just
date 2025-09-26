@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.2.3
+# Version:      0.2.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -252,10 +252,11 @@ print_info () {
   echo ""
   if [[ ${info} =~ switch ]]; then
     echo "${info}(es):"
+    echo "-----------"
   else
     echo "${info}(s):"
+    echo "----------"
   fi
-  echo "---------"
   while read -r line; do
     if [[ "${line}" =~ .*"# ${info}".* ]]; then
       if [[ "${info}" =~ option ]]; then
