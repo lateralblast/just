@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.2.4
+# Version:      0.2.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -199,7 +199,7 @@ do_exit () {
 check_value () {
   param="$1"
   value="$2"
-  if [[ "${value}" =~ "--" ]]; then
+  if [[ ${value} =~ ^-- ]]; then
     print_message "Value '$value' for parameter '$param' looks like a parameter" "verbose"
     echo ""
     if [ "${options['force']}" = "false" ]; then
