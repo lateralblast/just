@@ -46,3 +46,7 @@
 # Fixed processing of options
 # 0.2.4: Fri 26 Sep 2025 18:27:59 AEST
 # Updated usage output
+# 0.2.5: Fri 26 Sep 2025 18:30:42 AEST
+# Improved parameter value checking
+# 0.2.6: Fri 26 Sep 2025 18:33:55 AEST
+# Improved options processing

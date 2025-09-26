@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.2.5
+# Version:      0.2.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -369,7 +369,8 @@ fi
 
 process_options () {
   option="$1"
-  if [[ "${option}" =~ ^no ]]; then
+  if [[ "${option}" =~ ^no ]] || [[ "${option}" =~ ^un ]]; then
+    options["${option}"]="true"
     option="${option:2}"
     value="false"
   else
