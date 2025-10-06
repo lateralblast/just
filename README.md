@@ -6,7 +6,7 @@ Just a Unix Shell script Template
 Version
 -------
 
-just.bash version 0.2.6
+just.bash version 0.2.7
 
 just.sh version 0.0.8
 
@@ -19,9 +19,10 @@ the years to handle command line arguments and inline documentation.
 
 There are two versions of this script:
 
+just.bash - a template that uses bash 4.0 and greater features like associative arrays
+
 just.sh - a template that should would with most sh/bash compatible shells
 
-just.bash - a template that uses bash 4.0 and greater features like associative arrays
 
 License
 -------
