@@ -138,7 +138,7 @@ description next to the case, separated by a colon e.g.
 Actions can also be expressed independently. e.g.
 
 ```
---createiso)            # switch - Create ISO
+--createiso)            # switch : Create ISO
   actions_list+=("createiso")
   shift
   ;;
@@ -147,7 +147,7 @@ Actions can also be expressed independently. e.g.
 Options can also be expressed independantly, e.g.
 
 ```
---debug)                # switch - Enable debug mode
+--debug)                # switch : Enable debug mode
   options['debug']="true"
   shift
   ;;
