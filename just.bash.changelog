@@ -52,3 +52,9 @@
 # Improved options processing
 # 0.2.7: Mon 06 Oct 2025 13:34:24 AEDT
 # Improved options processing
+# 0.2.8: Sat 10 Jan 2026 13:55:26 AEDT
+# Fixed information_message and notice_message functions
+# 0.2.9: Sat 10 Jan 2026 14:24:55 AEDT
+# Improved mask check
+# 0.3.0: Sat 10 Jan 2026 14:27:44 AEDT
+# Fixed OS distro detection 

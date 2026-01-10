@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.2.7
+# Version:      0.3.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -53,7 +53,7 @@ set_defaults () {
   if [ "${os['name']}" = "Linux" ]; then
     lsb_check=$( command -v lsb_release )
     if [ -n "${lsb_check}" ]; then 
-      os['distro']=$( lsb_release -i -s 2 | sed 's/"//g' > /dev/null )
+      os['distro']=$( lsb_release -i -s | sed 's/"//g' )
     else
       os['distro']=$( hostnamectl | grep "Operating System" | awk '{print $3}' )
     fi
@@ -140,7 +140,7 @@ execute_message () {
 
 notice_message () {
   message="$1"
-  verbose_message "${message}" "notice"
+  print_message "${message}" "notice"
 }
 
 # Function: notice_message
@@ -149,7 +149,7 @@ notice_message () {
 
 information_message () {
   message="$1"
-  verbose_message "${message}" "info"
+  print_message "${message}" "info"
 }
 
 # Load modules
@@ -444,7 +444,7 @@ process_actions () {
 
 # Handle mask option
 
-if [[ $@ =~ --option ]] && [[ $@ =~ mask ]]; then
+if [[ ${script['args']} =~ --option ]] && [[ ${script['args']} =~ mask ]]; then
   options['mask']="true"
 fi
 
