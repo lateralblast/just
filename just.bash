@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.3.0
+# Version:      0.3.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -23,6 +23,7 @@
 
 declare -A os
 declare -A script
+declare -A defaults
 declare -A options 
 declare -a options_list
 declare -a actions_list
@@ -42,12 +43,12 @@ script['bin']=$( basename "${script['file']}" )
 # Set defaults
 
 set_defaults () {
-  options['verbose']="false"  # option : Verbose mode
-  options['strict']="false"   # option : Strict mode
-  options['dryrun']="false"   # option : Dryrun mode
-  options['debug']="false"    # option : Debug mode
-  options['force']="false"    # option : Force actions
-  options['mask']="false"     # option : Mask identifiers
+  defaults['verbose']="false"  # option : Verbose mode
+  defaults['strict']="false"   # option : Strict mode
+  defaults['dryrun']="false"   # option : Dryrun mode
+  defaults['debug']="false"    # option : Debug mode
+  defaults['force']="false"    # option : Force actions
+  defaults['mask']="false"     # option : Mask identifiers
   options['yes']="false"      # option : Answer yes to questions
   os['name']=$( uname -s )
   if [ "${os['name']}" = "Linux" ]; then
@@ -149,7 +150,7 @@ notice_message () {
 
 information_message () {
   message="$1"
-  print_message "${message}" "info"
+  print_message "${message}" "information"
 }
 
 # Load modules
@@ -180,6 +181,13 @@ reset_defaults () {
   if [ "${options['dryrun']}" = "true" ]; then
     print_message "Enabling dryrun mode" "notice"
   fi
+  for default in "${!defaults[@]}"; do
+    if [ "${options[${default}]}" = "" ]; then
+      options[${default}]=${defaults[${default}]}
+    fi
+    information_message "Setting ${default} to ${options[${default}]}"
+  done
+
 }
 
 # Function: do_exit
