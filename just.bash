@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.3.1
+# Version:      0.4.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -37,6 +37,7 @@ script['file']=$( realpath "${script['file']}" )
 script['path']=$( dirname "${script['file']}" )
 script['modulepath']="${script['path']}/modules"
 script['bin']=$( basename "${script['file']}" )
+script['user']=$( whoami )
 
 # Function: set_defaults
 #
@@ -49,7 +50,7 @@ set_defaults () {
   defaults['debug']="false"    # option : Debug mode
   defaults['force']="false"    # option : Force actions
   defaults['mask']="false"     # option : Mask identifiers
-  options['yes']="false"      # option : Answer yes to questions
+  defaults['yes']="false"      # option : Answer yes to questions
   os['name']=$( uname -s )
   if [ "${os['name']}" = "Linux" ]; then
     lsb_check=$( command -v lsb_release )
@@ -61,7 +62,22 @@ set_defaults () {
   fi
 }
 
+# Function: apply_defaults
+#
+# Copy defaults into options where not already set (used both up front,
+# so help/usage output before argument parsing is populated, and again
+# in reset_defaults after switches are parsed)
+
+apply_defaults () {
+  for default in "${!defaults[@]}"; do
+    if [ "${options[${default}]}" = "" ]; then
+      options[${default}]=${defaults[${default}]}
+    fi
+  done
+}
+
 set_defaults
+apply_defaults
 
 # Function: print_message
 #
@@ -153,18 +169,6 @@ information_message () {
   print_message "${message}" "information"
 }
 
-# Load modules
-
-if [ -d "${script['modulepath']}" ]; then
-  modules=$( find "${script['modulepath']}" -name "*.sh" )
-  for module in ${modules}; do
-    if [[ "${script['args']}" =~ "verbose" ]]; then
-     print_message "Module ${module}" "load"
-    fi
-    . "${module}"
-  done
-fi
-
 # Function: reset_defaults
 #
 # Reset defaults based on command line options
@@ -181,10 +185,8 @@ reset_defaults () {
   if [ "${options['dryrun']}" = "true" ]; then
     print_message "Enabling dryrun mode" "notice"
   fi
+  apply_defaults
   for default in "${!defaults[@]}"; do
-    if [ "${options[${default}]}" = "" ]; then
-      options[${default}]=${defaults[${default}]}
-    fi
     information_message "Setting ${default} to ${options[${default}]}"
   done
 
@@ -195,7 +197,7 @@ reset_defaults () {
 # Selective exit (don't exit when we're running in dryrun mode)
 
 do_exit () {
-  if [ "${options['dryrun']}" = "false" ]; then
+  if [ "${options['dryrun']}" != "true" ]; then
     exit
   fi
 }
@@ -210,7 +212,7 @@ check_value () {
   if [[ ${value} =~ ^-- ]]; then
     print_message "Value '$value' for parameter '$param' looks like a parameter" "verbose"
     echo ""
-    if [ "${options['force']}" = "false" ]; then
+    if [ "${options['force']}" != "true" ]; then
       do_exit
     fi
   else
@@ -239,12 +241,12 @@ execute_command () {
   command="$1"
   privilege="$2"
   if [[ "${privilege}" =~ su ]]; then
-    command="sudo sh -c \"${command}\""
+    command="sudo sh -c $( printf '%q' "${command}" )"
   fi
   if [ "${options['verbose']}" = "true" ]; then
     execute_message "${command}"
   fi
-  if [ "${options['dryrun']}" = "false" ]; then
+  if [ "${options['dryrun']}" != "true" ]; then
     eval "${command}"
   fi
 }
@@ -349,7 +351,7 @@ print_usage () {
 # Print version information
 
 print_version () {
-  script['version']=$( grep '^# Version' < "$0" | awk '{print $3}' )
+  script['version']=$( grep '^# Version' < "${script['file']}" | awk '{print $3}' )
   echo "${script['version']}"
 }
 
@@ -358,8 +360,7 @@ print_version () {
 # Run Shellcheck
 
 check_shellcheck () {
-  bin_test=$( command -v shellcheck | grep -c shellcheck )
-  if [ ! "$bin_test" = "0" ]; then
+  if command -v shellcheck > /dev/null 2>&1; then
     shellcheck "${script['file']}"
   fi
 }
@@ -378,7 +379,6 @@ fi
 process_options () {
   option="$1"
   if [[ "${option}" =~ ^no|^un|^dont ]]; then
-    options["${option}"]="true"
     if [[ "${option}" =~ ^dont ]]; then
       option="${option:4}"
     else
@@ -410,8 +410,8 @@ print_environment () {
 
 print_defaults () {
   echo "Defaults:"
-  for default in "${!options[@]}"; do
-    value="${options[${default}]}"
+  for default in "${!defaults[@]}"; do
+    value="${defaults[${default}]}"
     echo -e "Default ${default}\tis set to ${value}"
   done
 }
@@ -452,7 +452,7 @@ process_actions () {
 
 # Handle mask option
 
-if [[ ${script['args']} =~ --option ]] && [[ ${script['args']} =~ mask ]]; then
+if [[ ${script['args']} =~ --option ]] && [[ ${script['args']} =~ (^|[,[:space:]])mask($|[,[:space:]]) ]]; then
   options['mask']="true"
 fi
 
@@ -521,6 +521,18 @@ while test $# -gt 0; do
       ;;
   esac
 done
+
+# Load modules
+
+if [ -d "${script['modulepath']}" ]; then
+  modules=$( find "${script['modulepath']}" -name "*.sh" )
+  for module in ${modules}; do
+    if [ "${options['verbose']}" = "true" ]; then
+     print_message "Module ${module}" "load"
+    fi
+    . "${module}"
+  done
+fi
 
 # Process options
 

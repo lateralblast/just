@@ -60,3 +60,27 @@
 # Fixed OS distro detection 
 # 0.3.1: Mon 12 Jan 2026 15:19:18 AEDT
 # Updated set_defaults and reset_defaults function
+# 0.3.2: Mon 21 Sep 2026 18:01:13 AEST
+# Fixed print_defaults to read from defaults array instead of options
+# 0.3.3: Mon 21 Sep 2026 18:02:18 AEST
+# Fixed process_options leaving stray unstripped negated option entries
+# 0.3.4: Mon 21 Sep 2026 18:03:29 AEST
+# Fixed do_exit/check_value not exiting when dryrun/force are unset
+# 0.3.5: Mon 21 Sep 2026 18:05:18 AEST
+# Fixed --usage/--help printing blank defaults by priming options early
+# 0.3.6: Mon 21 Sep 2026 18:06:44 AEST
+# Fixed mask feature by setting the previously-unassigned script user
+# 0.3.7: Mon 21 Sep 2026 18:08:36 AEST
+# Fixed module load verbose message by loading modules after options are parsed
+# 0.3.8: Mon 21 Sep 2026 18:09:58 AEST
+# Moved yes option into the defaults array for consistency
+# 0.3.9: Mon 21 Sep 2026 18:12:27 AEST
+# Made execute_command dryrun check consistent with do_exit/check_value
+# 0.4.0: Mon 21 Sep 2026 18:13:40 AEST
+# Tightened early mask detection to avoid matching nomask/unmask
+# 0.4.1: Mon 21 Sep 2026 18:14:42 AEST
+# Made print_version read from the resolved script path instead of $0
+# 0.4.2: Mon 21 Sep 2026 18:16:14 AEST
+# Fixed sudo command quoting in execute_command to survive embedded quotes
+# 0.4.3: Mon 21 Sep 2026 18:19:37 AEST
+# Simplified check_shellcheck existence check
