@@ -14,3 +14,8 @@
 # Bugfixes and improvements
 # 0.0.8: Sun Apr 13 16:29:54 AEST 2025
 # Added warning message function
+# 0.0.9: Mon 28 Sep 2026 21:08:52 AEST
+# Relicensed to CC BY-NC-SA 4.0
+# 0.1.0: Mon 28 Sep 2026 21:42:47 AEST
+# Fixed process_actions exiting after every action, breaking comma-separated multiple actions
+# Fixed --force only taking effect when it appeared before the switch it was meant to override

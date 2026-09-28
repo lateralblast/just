@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template)
-# Version:      0.0.8
+# Version:      0.1.0
 # Release:      1
-# License:      CC-BA (Creative Commons By Attribution)
-#               http://creativecommons.org/licenses/by/4.0/legalcode
+# License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
+#               https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 # Group:        System
 # Source:       N/A
 # URL:          https://github.com/lateralblast/just
@@ -53,6 +53,12 @@ set_defaults () {
 }
 
 set_defaults
+
+# Enable early force detection so --force applies regardless of argument order
+
+if [[ "$script_args" =~ (^|[[:space:]])--force($|[[:space:]]) ]]; then
+  do_force="true"
+fi
 
 # Verbose message
 
@@ -303,21 +309,17 @@ process_actions () {
     help)                 # action
       # Print actions help
       print_actions
-      exit
       ;;
     version)              # action
       # Print version
       print_version
-      exit
       ;;
     shellcheck)           # action
       # Shellcheck script
       check_shellcheck
-      exit
       ;;
     *)
       print_actions
-      exit
       ;;
   esac
 }

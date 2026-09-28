@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # Name:         just (Just a UNIX Shell script Template [with bash features])
-# Version:      0.4.3
+# Version:      0.4.5
 # Release:      1
-# License:      CC-BA (Creative Commons By Attribution)
-#               http://creativecommons.org/licenses/by/4.0/legalcode
+# License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
+#               https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 # Group:        System
 # Source:       N/A
 # URL:          https://github.com/lateralblast/just
@@ -425,27 +425,21 @@ process_actions () {
   case $actions in
     help)                 # action : Print actions help
       print_actions
-      exit
       ;;
     version)              # action : Print version
       print_version
-      exit
       ;;
     printenv*)            # action : Print environment
       print_environment
-      exit
       ;;
     printdefaults)        # action : Print defaults
       print_defaults
-      exit
       ;;
     shellcheck)           # action : Shellcheck script
       check_shellcheck
-      exit
       ;;
     *)
       print_actions
-      exit
       ;;
   esac
 }
@@ -454,6 +448,15 @@ process_actions () {
 
 if [[ ${script['args']} =~ --option ]] && [[ ${script['args']} =~ (^|[,[:space:]])mask($|[,[:space:]]) ]]; then
   options['mask']="true"
+fi
+
+# Handle early force detection so --force applies regardless of argument order
+
+if [[ ${script['args']} =~ (^|[[:space:]])--force($|[[:space:]]) ]]; then
+  options['force']="true"
+fi
+if [[ ${script['args']} =~ --option ]] && [[ ${script['args']} =~ (^|[,[:space:]])force($|[,[:space:]]) ]]; then
+  options['force']="true"
 fi
 
 # Handle command line arguments
